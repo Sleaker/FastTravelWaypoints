@@ -6,6 +6,7 @@ package ben657.fasttravelwaypoints;
 
 import bsh.EvalError;
 import bsh.Interpreter;
+import com.gmail.nossr50.datatypes.McMMOPlayer;
 import com.gmail.nossr50.mcMMO;
 import java.io.File;
 import java.util.ArrayList;
@@ -157,10 +158,9 @@ public class FastTravelWaypoints extends JavaPlugin {
         }
         try {
             settingsConfig.load(settingsFile);
-            settingsConfig.addDefault("priceEqn", "10");
-            settingsConfig.addDefault("pricePerBlock", 10);
+            settingsConfig.addDefault("priceEqn", "[DISTANCE]*5");
             settingsConfig.addDefault("worldToWorldPrice", 200);
-            settingsConfig.addDefault("activateDistance", 5);
+            settingsConfig.addDefault("activateRadius", 5);
             settingsConfig.options().copyDefaults(true);
             settingsConfig.save(settingsFile);
         } catch (Exception e) {
@@ -174,7 +174,7 @@ public class FastTravelWaypoints extends JavaPlugin {
         }
         pricePerBlock = settingsConfig.getDouble("pricePerBlock", 10);
         worldToWorldPrice = settingsConfig.getDouble("worldToWorldPrice", 200);
-        activateDistance = settingsConfig.getDouble("activateDistance", 5);
+        activateDistance = settingsConfig.getDouble("activateRadius", 5);
     }
 
     @Override
@@ -212,13 +212,14 @@ public class FastTravelWaypoints extends JavaPlugin {
                 if (point != null) {
                     if ((player.hasPermission(playerPerm) && !point.tryFind(player.getName(), true)) || player.hasPermission(adminPerm)) {
                         int distance = (int) player.getLocation().distance(point.loc);
-                        EconomyResponse r = econ.withdrawPlayer(player.getName(), getPrice(distance, 1));
+                        double price = getPrice(player, point);
+                        EconomyResponse r = econ.withdrawPlayer(player.getName(), price);
                         if (r.type == EconomyResponse.ResponseType.FAILURE) {
                             player.sendMessage(noMoney);
                             return true;
                         }
                         player.teleport(point.loc);
-                        player.sendMessage(teleported + " It cost: " + pricePerBlock * distance);
+                        player.sendMessage(teleported + " It cost: " + price);
                         return true;
                     } else if (point.tryFind(player.getName(), true)) {
                         player.sendMessage(notFoundPoint);
@@ -245,10 +246,19 @@ public class FastTravelWaypoints extends JavaPlugin {
         }
         return null;
     }
+    
+    public boolean isWaypontInRegion(String region, Waypoint point){
+        return false;
+    }
+    
+    public boolean isPlayerInRegion(String region, Player player){
+        return false;
+    }
 
-    public double getPrice(int distance, int powerLvl) {
-        String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(distance));
-        priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(powerLvl));
+    public double getPrice(Player player, Waypoint point) {
+        String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));
+        priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(new McMMOPlayer(player).getPowerLevel()));
+        priceStr = priceStr.replaceAll("[LVL]", String.valueOf(player.getLevel()));
         System.out.println(priceStr);
         Interpreter interp = new Interpreter();
         try {
