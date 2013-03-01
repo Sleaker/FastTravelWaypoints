@@ -6,6 +6,7 @@ package ben657.fasttravelwaypoints;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.bukkit.Location;
 
 /**
