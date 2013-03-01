@@ -6,8 +6,8 @@ package ben657.fasttravelwaypoints;
 
 import bsh.EvalError;
 import bsh.Interpreter;
-import com.gmail.nossr50.datatypes.McMMOPlayer;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.api.ExperienceAPI;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -257,7 +257,7 @@ public class FastTravelWaypoints extends JavaPlugin {
 
     public double getPrice(Player player, Waypoint point) {
         String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));
-        priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(new McMMOPlayer(player).getPowerLevel()));
+        priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
         priceStr = priceStr.replaceAll("[LVL]", String.valueOf(player.getLevel()));
         System.out.println(priceStr);
         Interpreter interp = new Interpreter();
