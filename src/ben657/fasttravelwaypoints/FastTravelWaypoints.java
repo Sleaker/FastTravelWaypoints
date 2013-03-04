@@ -29,6 +29,7 @@ import bsh.Interpreter;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.api.ExperienceAPI;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -57,17 +58,13 @@ public class FastTravelWaypoints extends JavaPlugin {
     public static double activateDistance;
     public static String priceEqn;
     public mcMMO mmo;
-       
+
     @Override
     public void onEnable() {
-        
-        mmo = (mcMMO)getServer().getPluginManager().getPlugin("mcMMO");
-        if(mmo != null){
-            System.out.println("test");
-        }
-        
-        new FTWEvents(this);
-        
+
+        mmo = (mcMMO) getServer().getPluginManager().getPlugin("mcMMO");
+        //new FTWEvents(this);
+
         Permission adminPermi = new Permission(adminPerm);
         Permission playerPermi = new Permission(playerPerm);
         playerPermi.setDefault(PermissionDefault.TRUE);
@@ -90,6 +87,28 @@ public class FastTravelWaypoints extends JavaPlugin {
         loadWaypoints();
         loadSettings();
         getLogger().log(Level.INFO, "Loaded " + waypoints.size() + " waypoints.");
+
+        BukkitRunnable foundCheck = new BukkitRunnable() {
+            @Override
+            public void run() {
+                Player[] players = getServer().getOnlinePlayers();
+                for (int p = 0; p < players.length; p++) {
+                    Player player = players[p];
+                    for (int i = 0; i < waypoints.size(); i++) {
+                        Waypoint point = waypoints.get(i);
+                        if (point.loc.distance(player.getLocation()) < activateDistance) {
+                            boolean newFind = point.tryFind(player.getName(), false);
+                            if (newFind) {
+                                player.sendMessage(foundPoint + point.name);
+                            }
+                        }
+                    }
+
+                }
+            }
+        };
+        
+        foundCheck.runTaskTimer(this, 20, 20);
     }
 
     @Override
@@ -171,7 +190,7 @@ public class FastTravelWaypoints extends JavaPlugin {
             e.printStackTrace();
         }
         priceEqn = settingsConfig.getString("priceEqn", "10");
-        if(priceEqn.contains("[PWRLVL]") && mmo == null){
+        if (priceEqn.contains("[PWRLVL]") && mmo == null) {
             System.out.println("[FTW] You have added an mcMMO specific variable to your price equation, but mcMMO is not loaded.");
             getServer().getPluginManager().disablePlugin(this);
             return;
@@ -250,24 +269,25 @@ public class FastTravelWaypoints extends JavaPlugin {
         }
         return null;
     }
-    
-    public boolean isWaypontInRegion(String region, Waypoint point){
+
+    public boolean isWaypontInRegion(String region, Waypoint point) {
         return false;
     }
-    
-    public boolean isPlayerInRegion(String region, Player player){
+
+    public boolean isPlayerInRegion(String region, Player player) {
         return false;
     }
 
     public double getPrice(Player player, Waypoint point) {
-        String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));
-        priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
+        String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));        
         priceStr = priceStr.replaceAll("[LVL]", String.valueOf(player.getLevel()));
+        if(mmo != null){
+            priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
+        }
         System.out.println(priceStr);
         Interpreter interp = new Interpreter();
         try {
             interp.eval("price=" + priceStr);
-            System.out.println(interp.get("price"));
             return Integer.parseInt(String.valueOf(interp.get("price")));
         } catch (EvalError ex) {
             ex.printStackTrace();

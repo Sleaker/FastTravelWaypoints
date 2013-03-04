@@ -5,5 +5,6 @@ version: 1.0
 softdepend: [Vault,mcMMO]
 commands: 
   FTW:
+    aliases: [waypoint]
     description: Basic command which all others come from.
     usage: /FTW [create|delete] [name]
