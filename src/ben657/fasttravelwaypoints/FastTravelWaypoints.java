@@ -93,8 +93,11 @@ public class FastTravelWaypoints extends JavaPlugin {
                 Player[] players = getServer().getOnlinePlayers();
                 for (int p = 0; p < players.length; p++) {
                     Player player = players[p];
-                    for (int i = 0; i < waypoints.size(); i++) {
+                    for (int i = 0; i < waypoints.size(); i++) {                        
                         Waypoint point = waypoints.get(i);
+                        if(player.getLocation().getWorld().getName() != point.loc.getWorld().getName()){
+                            continue;
+                        }
                         if (point.loc.distance(player.getLocation()) < activateDistance) {
                             boolean newFind = point.tryFind(player.getName(), false);
                             if (newFind) {
@@ -284,7 +287,13 @@ public class FastTravelWaypoints extends JavaPlugin {
     }
 
     public double getPrice(Player player, Waypoint point) {
+        int crossWorld = 0;
+        if(player.getLocation().getWorld().getName() != point.loc.getWorld().getName()){
+            crossWorld = 1;
+            point.loc.setWorld(player.getLocation().getWorld());
+        }
         String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));
+        priceStr = priceStr.replaceAll("[XWORLD]", String.valueOf(crossWorld));
         priceStr = priceStr.replaceAll("[LVL]", String.valueOf(player.getLevel()));
         if (mmo != null) {
             priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
