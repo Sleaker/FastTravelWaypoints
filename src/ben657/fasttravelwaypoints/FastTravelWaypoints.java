@@ -53,7 +53,6 @@ public class FastTravelWaypoints extends JavaPlugin {
     String foundPoint = ChatColor.YELLOW + "[FTW] You have found a new waypoint: ";
     String notFoundPoint = ChatColor.RED + "[FTW] You have not found that waypoint.";
     public static ArrayList<Waypoint> waypoints;
-    public static double pricePerBlock;
     public static double worldToWorldPrice;
     public static double activateDistance;
     public static String priceEqn;
@@ -107,7 +106,7 @@ public class FastTravelWaypoints extends JavaPlugin {
                 }
             }
         };
-        
+
         foundCheck.runTaskTimer(this, 20, 20);
     }
 
@@ -195,7 +194,6 @@ public class FastTravelWaypoints extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        pricePerBlock = settingsConfig.getDouble("pricePerBlock", 10);
         worldToWorldPrice = settingsConfig.getDouble("worldToWorldPrice", 200);
         activateDistance = settingsConfig.getDouble("activateRadius", 5);
     }
@@ -204,7 +202,14 @@ public class FastTravelWaypoints extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (command.getName().equalsIgnoreCase("FTW") && args[0].equalsIgnoreCase("create") && args.length == 2) {
+            if (command.getName().equalsIgnoreCase("FTW") && args.length == 0) {
+                player.sendMessage(ChatColor.YELLOW + "[FTW] Current waypoints:");
+                for(int i = 0; i < waypoints.size(); i++){
+                    Waypoint point = waypoints.get(i);
+                    player.sendMessage(ChatColor.AQUA+point.name+" - price: "+getPrice(player, point));
+                }
+                return true;
+            } else if (command.getName().equalsIgnoreCase("FTW") && args[0].equalsIgnoreCase("create") && args.length == 2) {
                 if (player.hasPermission(adminPerm)) {
                     Waypoint point = new Waypoint(player.getLocation(), args[1]);
                     waypoints.add(point);
@@ -279,16 +284,15 @@ public class FastTravelWaypoints extends JavaPlugin {
     }
 
     public double getPrice(Player player, Waypoint point) {
-        String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));        
+        String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));
         priceStr = priceStr.replaceAll("[LVL]", String.valueOf(player.getLevel()));
-        if(mmo != null){
+        if (mmo != null) {
             priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
         }
-        System.out.println(priceStr);
         Interpreter interp = new Interpreter();
         try {
             interp.eval("price=" + priceStr);
-            return Integer.parseInt(String.valueOf(interp.get("price")));
+            return Math.round(Double.parseDouble(String.valueOf(interp.get("price"))));
         } catch (EvalError ex) {
             ex.printStackTrace();
         }
