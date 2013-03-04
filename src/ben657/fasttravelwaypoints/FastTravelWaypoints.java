@@ -62,14 +62,6 @@ public class FastTravelWaypoints extends JavaPlugin {
     public void onEnable() {
 
         mmo = (mcMMO) getServer().getPluginManager().getPlugin("mcMMO");
-        //new FTWEvents(this);
-
-        Permission adminPermi = new Permission(adminPerm);
-        Permission playerPermi = new Permission(playerPerm);
-        playerPermi.setDefault(PermissionDefault.TRUE);
-
-        getServer().getPluginManager().addPermission(adminPermi);
-        getServer().getPluginManager().addPermission(playerPermi);
 
         RegisteredServiceProvider<Economy> econProv = getServer().getServicesManager().getRegistration(Economy.class);
         if (econProv != null) {
@@ -212,6 +204,22 @@ public class FastTravelWaypoints extends JavaPlugin {
                     if (!point.tryFind(player.getName(), true)) {
                         player.sendMessage(ChatColor.AQUA + point.name + " - price: " + getPrice(player, point));
                     }
+                }
+                return true;
+
+            } else if (command.getName().equalsIgnoreCase("FTW") && args.length == 2 && args[0].equalsIgnoreCase("list") && args[1].equalsIgnoreCase("all")) {
+                if (player.hasPermission(adminPerm)) {
+                    player.sendMessage(ChatColor.YELLOW + "[FTW] Current waypoints:");
+                    for (int i = 0; i < waypoints.size(); i++) {
+                        Waypoint point = waypoints.get(i);
+                        if (!point.tryFind(player.getName(), true)) {
+                            player.sendMessage(ChatColor.AQUA + point.name + " - price: " + getPrice(player, point));
+                        }
+                    }
+                }
+                else
+                {
+                    player.sendMessage(noPerm);
                 }
                 return true;
             } else if (command.getName().equalsIgnoreCase("FTW") && args[0].equalsIgnoreCase("create") && args.length == 2) {
