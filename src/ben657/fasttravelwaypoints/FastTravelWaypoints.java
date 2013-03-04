@@ -93,9 +93,9 @@ public class FastTravelWaypoints extends JavaPlugin {
                 Player[] players = getServer().getOnlinePlayers();
                 for (int p = 0; p < players.length; p++) {
                     Player player = players[p];
-                    for (int i = 0; i < waypoints.size(); i++) {                        
+                    for (int i = 0; i < waypoints.size(); i++) {
                         Waypoint point = waypoints.get(i);
-                        if(player.getLocation().getWorld().getName() != point.loc.getWorld().getName()){
+                        if (player.getLocation().getWorld().getName() != point.loc.getWorld().getName()) {
                             continue;
                         }
                         if (point.loc.distance(player.getLocation()) < activateDistance) {
@@ -207,9 +207,11 @@ public class FastTravelWaypoints extends JavaPlugin {
             Player player = (Player) sender;
             if ((command.getName().equalsIgnoreCase("FTW") && args.length == 0) || (command.getName().equalsIgnoreCase("FTW") && args.length == 1 && args[0].equalsIgnoreCase("list"))) {
                 player.sendMessage(ChatColor.YELLOW + "[FTW] Current waypoints:");
-                for(int i = 0; i < waypoints.size(); i++){
+                for (int i = 0; i < waypoints.size(); i++) {
                     Waypoint point = waypoints.get(i);
-                    player.sendMessage(ChatColor.AQUA+point.name+" - price: "+getPrice(player, point));
+                    if (!point.tryFind(player.getName(), true)) {
+                        player.sendMessage(ChatColor.AQUA + point.name + " - price: " + getPrice(player, point));
+                    }
                 }
                 return true;
             } else if (command.getName().equalsIgnoreCase("FTW") && args[0].equalsIgnoreCase("create") && args.length == 2) {
@@ -288,7 +290,7 @@ public class FastTravelWaypoints extends JavaPlugin {
 
     public double getPrice(Player player, Waypoint point) {
         int crossWorld = 0;
-        if(player.getLocation().getWorld().getName() != point.loc.getWorld().getName()){
+        if (player.getLocation().getWorld().getName() != point.loc.getWorld().getName()) {
             crossWorld = 1;
             point.loc.setWorld(player.getLocation().getWorld());
         }
