@@ -202,7 +202,7 @@ public class FastTravelWaypoints extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (command.getName().equalsIgnoreCase("FTW") && args.length == 0) {
+            if ((command.getName().equalsIgnoreCase("FTW") && args.length == 0) || (command.getName().equalsIgnoreCase("FTW") && args.length == 1 && args[0].equalsIgnoreCase("list"))) {
                 player.sendMessage(ChatColor.YELLOW + "[FTW] Current waypoints:");
                 for(int i = 0; i < waypoints.size(); i++){
                     Waypoint point = waypoints.get(i);
