@@ -82,9 +82,7 @@ public class FastTravelWaypoints extends JavaPlugin {
         BukkitRunnable foundCheck = new BukkitRunnable() {
             @Override
             public void run() {
-                Player[] players = getServer().getOnlinePlayers();
-                for (int p = 0; p < players.length; p++) {
-                    Player player = players[p];
+                for (Player player : getServer().getOnlinePlayers()) {
                     for (int i = 0; i < waypoints.size(); i++) {
                         Waypoint point = waypoints.get(i);
                         if (player.getLocation().getWorld().getName() != point.loc.getWorld().getName()) {
