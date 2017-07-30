@@ -1,2 +1,17 @@
-## YAML Template.
----
+name: FastTravelWaypoints
+author: ben657
+main: ben657.fasttravelwaypoints.FastTravelWaypoints
+version: 1.0
+depend: [Vault,mcMMO]
+commands: 
+  FTW:
+    aliases: [waypoint]
+    description: Basic command which all others come from.
+    usage: /FTW [create|delete] [name]
+permissions:
+  FTW.player:
+    description: Normal command access
+    default: true
+  FTW.admin:
+    description: Admin command access
+    default: op
