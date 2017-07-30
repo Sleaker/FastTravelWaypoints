@@ -19,8 +19,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,6 +27,8 @@ import bsh.Interpreter;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.api.ExperienceAPI;
+import java.io.IOException;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -62,7 +62,7 @@ public class FastTravelWaypoints extends JavaPlugin {
     public void onEnable() {
 
         mmo = (mcMMO) getServer().getPluginManager().getPlugin("mcMMO");
-
+        if (mmo != null ) getLogger().info("Connected to mcMMO");
         RegisteredServiceProvider<Economy> econProv = getServer().getServicesManager().getRegistration(Economy.class);
         if (econProv != null) {
             econ = econProv.getProvider();
@@ -85,7 +85,7 @@ public class FastTravelWaypoints extends JavaPlugin {
                 for (Player player : getServer().getOnlinePlayers()) {
                     for (int i = 0; i < waypoints.size(); i++) {
                         Waypoint point = waypoints.get(i);
-                        if (player.getLocation().getWorld().getName() != point.loc.getWorld().getName()) {
+                        if (!player.getLocation().getWorld().getName().equals(point.loc.getWorld().getName())) {
                             continue;
                         }
                         if (point.loc.distance(player.getLocation()) < activateDistance) {
@@ -95,7 +95,6 @@ public class FastTravelWaypoints extends JavaPlugin {
                             }
                         }
                     }
-
                 }
             }
         };
@@ -115,8 +114,8 @@ public class FastTravelWaypoints extends JavaPlugin {
                 waypointsConfig.set(s, null);
                 waypointsConfig.save(waypointsFile);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            this.getLogger().log(Level.SEVERE, e.getMessage());
         }
         for (int i = 0; i < waypoints.size(); i++) {
             Waypoint point = waypoints.get(i);
@@ -128,8 +127,8 @@ public class FastTravelWaypoints extends JavaPlugin {
         }
         try {
             waypointsConfig.save(waypointsFile);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            this.getLogger().log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -138,18 +137,20 @@ public class FastTravelWaypoints extends JavaPlugin {
             waypointsFile.getParentFile().mkdirs();
             try {
                 waypointsFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+                this.getLogger().log(Level.SEVERE, e.getMessage());
             }
         }
         try {
             waypointsConfig.load(waypointsFile);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            this.getLogger().log(Level.SEVERE, e.getMessage());
+        } catch (InvalidConfigurationException e) {
+            this.getLogger().log(Level.SEVERE, e.getMessage());
         }
         Object[] keys = waypointsConfig.getKeys(false).toArray();
-        for (int i = 0; i < keys.length; i++) {
-            String key = keys[i].toString();
+        for (Object keyObj : keys) {
+            String key = keyObj.toString();
             int locX = waypointsConfig.getInt(key + ".X");
             int locY = waypointsConfig.getInt(key + ".Y");
             int locZ = waypointsConfig.getInt(key + ".Z");
@@ -167,8 +168,8 @@ public class FastTravelWaypoints extends JavaPlugin {
             settingsFile.getParentFile().mkdirs();
             try {
                 settingsFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+                this.getLogger().log(Level.SEVERE, e.getMessage());
             }
         }
         try {
@@ -178,8 +179,10 @@ public class FastTravelWaypoints extends JavaPlugin {
             settingsConfig.addDefault("activateRadius", 5);
             settingsConfig.options().copyDefaults(true);
             settingsConfig.save(settingsFile);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            this.getLogger().log(Level.SEVERE, e.getMessage());
+        } catch (InvalidConfigurationException e) {
+            this.getLogger().log(Level.SEVERE, e.getMessage());
         }
         priceEqn = settingsConfig.getString("priceEqn", "10");
         if (priceEqn.contains("[PWRLVL]") && mmo == null) {
@@ -296,7 +299,7 @@ public class FastTravelWaypoints extends JavaPlugin {
 
     public double getPrice(Player player, Waypoint point) {
         int crossWorld = 0;
-        if (player.getLocation().getWorld().getName() != point.loc.getWorld().getName()) {
+        if (!player.getLocation().getWorld().getName().equals(point.loc.getWorld().getName())) {
             crossWorld = 1;
             point.loc.setWorld(player.getLocation().getWorld());
         }
@@ -305,13 +308,15 @@ public class FastTravelWaypoints extends JavaPlugin {
         priceStr = priceStr.replaceAll("[LVL]", String.valueOf(player.getLevel()));
         if (mmo != null) {
             priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
+        } else if (priceStr.contains("[PWRLVL")) {
+            getLogger().log(Level.SEVERE, "mcMMO power level used in calculation but not loaded.");
         }
         Interpreter interp = new Interpreter();
         try {
             interp.eval("price=" + priceStr);
             return Math.round(Double.parseDouble(String.valueOf(interp.get("price"))));
         } catch (EvalError ex) {
-            ex.printStackTrace();
+            this.getLogger().log(Level.SEVERE, ex.getMessage());
         }
         return 0;
     }

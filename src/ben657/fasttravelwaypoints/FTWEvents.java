@@ -25,13 +25,15 @@ public class FTWEvents implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onMove(PlayerMoveEvent e) {
+        
         Player player = e.getPlayer();
-        for (int i = 0; i < plugin.waypoints.size(); i++) {
-            Waypoint point = plugin.waypoints.get(i);
-            if (point.loc.distance(player.getLocation()) < plugin.activateDistance) {
+        for (int i = 0; i < FastTravelWaypoints.waypoints.size(); i++) {
+            Waypoint point = FastTravelWaypoints.waypoints.get(i);
+            if (point.loc.distance(player.getLocation()) < FastTravelWaypoints.activateDistance) {
                 boolean newFind = point.tryFind(player.getName(), false);
                 if (newFind) {
                     player.sendMessage(plugin.foundPoint + point.name);
+                    plugin.saveWaypoints();
                 }
             }
 
