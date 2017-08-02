@@ -2,7 +2,7 @@ name: FastTravelWaypoints
 author: ben657
 main: ben657.fasttravelwaypoints.FastTravelWaypoints
 version: 1.0
-depend: [Vault,mcMMO]
+softdepend: [Vault,mcMMO]
 commands: 
   FTW:
     aliases: [waypoint]

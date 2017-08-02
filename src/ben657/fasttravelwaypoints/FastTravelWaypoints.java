@@ -303,11 +303,11 @@ public class FastTravelWaypoints extends JavaPlugin {
             point.loc.setWorld(player.getLocation().getWorld());
         }
         String priceStr = priceEqn.replace("[DISTANCE]", String.valueOf(player.getLocation().distance(point.loc)));
-        priceStr = priceStr.replaceAll("[XWORLD]", String.valueOf(crossWorld));
-        priceStr = priceStr.replaceAll("[LVL]", String.valueOf(player.getLevel()));
+        priceStr = priceStr.replace("[XWORLD]", String.valueOf(crossWorld));
+        priceStr = priceStr.replace("[LVL]", String.valueOf(player.getLevel()));
         if (mmo != null) {
-            priceStr = priceStr.replaceAll("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
-        } else if (priceStr.contains("[PWRLVL")) {
+            priceStr = priceStr.replace("[PWRLVL]", String.valueOf(ExperienceAPI.getPowerLevel(player)));
+        } else if (priceStr.contains("[PWRLVL]")) {
             getLogger().log(Level.SEVERE, "mcMMO power level used in calculation but not loaded.");
         }
         Interpreter interp = new Interpreter();
