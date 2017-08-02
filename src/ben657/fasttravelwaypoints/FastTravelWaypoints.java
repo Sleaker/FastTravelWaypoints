@@ -315,6 +315,7 @@ public class FastTravelWaypoints extends JavaPlugin {
             interp.eval("price=" + priceStr);
             return Math.round(Double.parseDouble(String.valueOf(interp.get("price"))));
         } catch (EvalError ex) {
+        	this.getLogger().log(Level.SEVERE, "Invalid Price String: " + priceStr);
             this.getLogger().log(Level.SEVERE, ex.getMessage());
         }
         return 0;
