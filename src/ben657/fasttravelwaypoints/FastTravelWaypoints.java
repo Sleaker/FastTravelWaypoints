@@ -253,9 +253,8 @@ public class FastTravelWaypoints extends JavaPlugin {
                 Waypoint point = getWaypointFromName(args[0]);
                 if (point != null) {
                     if ((player.hasPermission(playerPerm) && !point.tryFind(player.getName(), true)) || player.hasPermission(adminPerm)) {
-                        int distance = (int) player.getLocation().distance(point.loc);
                         double price = getPrice(player, point);
-                        EconomyResponse r = econ.withdrawPlayer(player.getName(), price);
+                        EconomyResponse r = econ.withdrawPlayer(player, price);
                         if (r.type == EconomyResponse.ResponseType.FAILURE) {
                             player.sendMessage(noMoney);
                             return true;
